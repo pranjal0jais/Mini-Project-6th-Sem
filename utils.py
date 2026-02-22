@@ -17,7 +17,7 @@ def extract_features(path):
     img = apply_clahe(img)
     return img2vec.get_vec(img, tensor=False)
 
-def validate(model, loss_function, val_loader, device):
+def validate(model, loss_function, threshold,val_loader, device):
     model.eval()
     total_loss = 0
     correct = 0
@@ -33,14 +33,15 @@ def validate(model, loss_function, val_loader, device):
             total_loss += loss.item()
 
             probs = torch.sigmoid(output)
-            preds = (probs > 0.5).float()
+            preds = (probs > threshold).float()
             correct += (preds == y).sum().item()
             total += y.size(0)
 
     print(f"Valid - Loss: {total_loss:.4f} Accuracy: {correct/total:.4f}")
+    return total_loss
 
 
-def train(model, loss_function, optimizer, train_loader, device):
+def train(model, loss_function, threshold, optimizer, train_loader, device):
     model.train()
     total_loss = 0
     correct = 0
@@ -59,7 +60,7 @@ def train(model, loss_function, optimizer, train_loader, device):
         total_loss += loss.item()
 
         probs = torch.sigmoid(output)
-        preds = (probs > 0.5).float()
+        preds = (probs > threshold).float()
         correct += (preds == y).sum().item()
         total += y.size(0)
 
