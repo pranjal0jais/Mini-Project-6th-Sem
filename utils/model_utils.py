@@ -1,21 +1,4 @@
-from PIL import Image
-from img2vec_pytorch import Img2Vec
 import torch
-import cv2
-import numpy as np
-
-img2vec = Img2Vec(model="densenet121", cuda=True)
-
-def apply_clahe(img):
-    img_arr = np.array(img.convert('L'))
-    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
-    enhanced_img = clahe.apply(img_arr)
-    return Image.fromarray(enhanced_img).convert("RGB")
-
-def extract_features(path):
-    img = Image.open(path).convert('RGB')
-    img = apply_clahe(img)
-    return img2vec.get_vec(img, tensor=False)
 
 def validate(model, loss_function, threshold,val_loader, device):
     model.eval()
@@ -39,7 +22,6 @@ def validate(model, loss_function, threshold,val_loader, device):
 
     print(f"Valid - Loss: {total_loss:.4f} Accuracy: {correct/total:.4f}")
     return total_loss
-
 
 def train(model, loss_function, threshold, optimizer, train_loader, device):
     model.train()
