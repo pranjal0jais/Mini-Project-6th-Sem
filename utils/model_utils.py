@@ -1,4 +1,15 @@
 import torch
+import numpy as np
+import torch
+from matplotlib import pyplot as plt
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    confusion_matrix,
+    classification_report, ConfusionMatrixDisplay
+)
 
 def validate(model, loss_function, threshold, val_loader, device):
     model.eval()
@@ -58,3 +69,45 @@ def train(model, loss_function, threshold, optimizer, train_loader, device):
     accuracy = correct / total
 
     print(f"Train - Loss: {avg_loss:.4f} Accuracy: {accuracy:.4f}")
+
+def evaluate(model, threshold, data_loader, device):
+    model.eval()
+
+    all_preds = []
+    all_targets = []
+
+    with torch.no_grad():
+        for x, y in data_loader:
+            x = x.to(device)
+            y = y.to(device).view(-1, 1)
+
+            outputs = model(x)
+            probs = torch.sigmoid(outputs)
+            preds = (probs > threshold).float()
+
+            all_preds.extend(preds.cpu().numpy())
+            all_targets.extend(y.cpu().numpy())
+
+    all_preds = np.array(all_preds)
+    all_targets = np.array(all_targets)
+
+    accuracy = accuracy_score(all_targets, all_preds)
+    precision = precision_score(all_targets, all_preds)
+    recall = recall_score(all_targets, all_preds)
+    f1 = f1_score(all_targets, all_preds)
+    cm = confusion_matrix(all_targets, all_preds)
+
+    print("===== EVALUATION METRICS =====")
+    print(f"Accuracy  : {accuracy:.4f}")
+    print(f"Precision : {precision:.4f}")
+    print(f"Recall    : {recall:.4f}")
+    print(f"F1 Score  : {f1:.4f}")
+    print("\nConfusion Matrix:\n", cm)
+
+    print("\nDetailed Classification Report:\n")
+    print(classification_report(all_targets, all_preds))
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm,
+                                  display_labels=["NORMAL", "PNEUMONIA"])
+    disp.plot(cmap="Blues")
+    plt.title("Confusion Matrix")
+    plt.show()
