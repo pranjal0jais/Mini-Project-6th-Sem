@@ -1,4 +1,4 @@
-import torch
+from torch.utils.data import TensorDataset, DataLoader
 import numpy as np
 import torch
 from matplotlib import pyplot as plt
@@ -111,3 +111,18 @@ def evaluate(model, threshold, data_loader, device):
     disp.plot(cmap="Blues")
     plt.title("Confusion Matrix")
     plt.show()
+
+def get_tensor_dataset(dataframe, label):
+    feat = dataframe.drop(label, axis=1).values
+    label = dataframe[label].values
+    dataset = TensorDataset(
+        torch.tensor(feat, dtype=torch.float32),
+        torch.tensor(label, dtype=torch.float32)
+    )
+    return dataset
+
+def get_data_loader(dataset, batch_size=32):
+    loader = DataLoader(dataset=dataset,
+                        batch_size=batch_size,
+                        shuffle=True)
+    return loader
