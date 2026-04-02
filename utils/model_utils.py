@@ -1,6 +1,7 @@
 from torch.utils.data import TensorDataset, DataLoader
 import numpy as np
 import torch
+from sklearn.preprocessing import StandardScaler
 from matplotlib import pyplot as plt
 from sklearn.metrics import (
     accuracy_score,
@@ -70,7 +71,7 @@ def train(model, loss_function, threshold, optimizer, train_loader, device):
 
     print(f"Train - Loss: {avg_loss:.4f} Accuracy: {accuracy:.4f}")
 
-def evaluate(model, threshold, data_loader, device):
+def evaluate(model, threshold, data_loader, device, labels):
     model.eval()
 
     all_preds = []
@@ -107,7 +108,7 @@ def evaluate(model, threshold, data_loader, device):
     print("\nDetailed Classification Report:\n")
     print(classification_report(all_targets, all_preds))
     disp = ConfusionMatrixDisplay(confusion_matrix=cm,
-                                  display_labels=["NORMAL", "PNEUMONIA"])
+                                  display_labels=labels)
     disp.plot(cmap="Blues")
     plt.title("Confusion Matrix")
     plt.show()
