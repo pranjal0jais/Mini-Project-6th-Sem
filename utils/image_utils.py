@@ -10,7 +10,10 @@ def apply_clahe(img):
     return Image.fromarray(enhanced_img).convert("RGB")
 
 
-def extract_features(model, path):
-    img = Image.open(path).convert('RGB')
+def extract_features(model, image_input):
+    if isinstance(image_input, Image.Image):
+        img = image_input.convert('RGB')
+    else:
+        img = Image.open(image_input).convert('RGB')
     img = apply_clahe(img)
     return model.get_vec(img, tensor=False)
