@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pneumonia Detection</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      margin: 0;
+      padding: 30px;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: white;
+      padding: 25px;
+      border-radius: 14px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      text-align: center;
+      color: #1f2937;
+    }
+
+    .upload-box {
+      border: 2px dashed #cbd5e1;
+      padding: 30px;
+      text-align: center;
+      border-radius: 12px;
+      margin: 20px 0;
+      background: #f8fafc;
+    }
+
+    input[type="file"] {
+      margin-top: 10px;
+    }
+
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 12px 22px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 15px;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .result {
+      margin-top: 25px;
+      padding: 20px;
+      border-radius: 10px;
+      background: #f8fafc;
+      display: none;
+    }
+
+    .result p {
+      margin: 8px 0;
+      font-size: 16px;
+    }
+
+    .gradcam-container {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .gradcam-container img {
+      max-width: 100%;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      margin-top: 10px;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      margin-top: 15px;
+      color: #2563eb;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Pneumonia Detection</h1>
+
+  <div class="upload-box">
+    <p>Select Chest X-ray Image</p>
+    <input type="file" id="imageInput" accept="image/*" />
+    <br />
+    <button onclick="uploadImage()">Analyze</button>
+  </div>
+
+  <div class="loading" id="loading">Analyzing image...</div>
+
+  <div class="result" id="resultBox">
+    <h2>Prediction Result</h2>
+    <p><strong>Diagnosis:</strong> <span id="diagnosis"></span></p>
+    <p><strong>Pneumonia Confidence:</strong> <span id="pConfidence"></span></p>
+    <p><strong>Type:</strong> <span id="type"></span></p>
+    <p><strong>Type Confidence:</strong> <span id="tConfidence"></span></p>
+
+    <div class="gradcam-container">
+      <h3>Grad-CAM Visualization</h3>
+      <img id="gradcamImage" src="" alt="GradCAM"/>
+    </div>
+  </div>
+</div>
+
+<script>
+  async function uploadImage() {
+    const fileInput = document.getElementById("imageInput");
+    const file = fileInput.files[0];
+
+    if (!file) {
+      alert("Please select an image first.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    document.getElementById("loading").style.display = "block";
+    document.getElementById("resultBox").style.display = "none";
+
+    try {
+      const response = await fetch("http://localhost:8000/predict/gradcam", {
+        method: "POST",
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to get prediction");
+      }
+
+      const data = await response.json();
+
+      document.getElementById("diagnosis").innerText = data.diagnosis;
+      document.getElementById("pConfidence").innerText =
+        (data.pneumonia_confidence).toFixed(2) + "%";
+
+      document.getElementById("type").innerText = data.type || "N/A";
+
+      document.getElementById("tConfidence").innerText =
+        data.type_confidence
+          ? (data.type_confidence).toFixed(2) + "%"
+          : "N/A";
+
+      // base64 image from backend
+      document.getElementById("gradcamImage").src =
+        "data:image/png;base64," + data.gradcam;
+
+      document.getElementById("resultBox").style.display = "block";
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      document.getElementById("loading").style.display = "none";
+    }
+  }
+</script>
+
+</body>
+</html>

@@ -17,11 +17,13 @@ class BacterialViralPredictor:
             nn.Linear(1024, 256),
             nn.BatchNorm1d(256),
             nn.ReLU(),
-            nn.Dropout(0.4),
+            nn.Dropout(0.5),
+
             nn.Linear(256, 64),
             nn.BatchNorm1d(64),
             nn.ReLU(),
-            nn.Dropout(0.2),
+            nn.Dropout(0.4),
+
             nn.Linear(64, 1)
         )
         return model.to(self.device)

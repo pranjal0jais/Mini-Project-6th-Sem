@@ -110,6 +110,7 @@ def evaluate(model, threshold, data_loader, device, labels):
     disp = ConfusionMatrixDisplay(confusion_matrix=cm,
                                   display_labels=labels)
     disp.plot(cmap="Blues")
+    plt.grid(False)
     plt.title("Confusion Matrix")
     plt.show()
 
